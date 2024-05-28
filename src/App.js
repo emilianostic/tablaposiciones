@@ -1,91 +1,96 @@
 import React, { useState } from 'react';
-import MatchResults from './componentes/MatchResults';
-import StandingsTable from './componentes/StandingsTable';
+import TablaPosiciones from './componentes/TablaPosiciones';
+import Fecha from './componentes/Fecha';
+import Emparejamientos from './componentes/Emparejamientos';
+import 'tailwindcss/tailwind.css';
 
-
-
-const initialTeams = [
-  { name: 'Ingenieros A', played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0, goalDifference: 0  },
-  { name: 'Contadores E', played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0, goalDifference: 0  },
-  { name: 'Abogados A', played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0, goalDifference: 0  },
-  { name: 'Contadores S', played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0, goalDifference: 0  },
-  { name: 'Abogadoes E', played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0, goalDifference: 0  },
-  { name: 'Ingenieros Arq', played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0, goalDifference: 0  },
-  { name: 'Ingenieros O', played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0, goalDifference: 0  },
-  { name: 'Ingenieros Z', played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0, goalDifference: 0  },
-  { name: 'Ingenieros Bio', played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0, goalDifference: 0  },
-  { name: 'Contadores J', played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0, goalDifference: 0  },
-  { name: 'Contadores D', played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0, goalDifference: 0  },
-  { name: 'Contadores V', played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0, goalDifference: 0  },
-  { name: 'Kinesiólogos', played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0, goalDifference: 0  },
+const equiposIniciales = [
+  { nombre: 'Ingenieros A', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
+  { nombre: 'Contadores D', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
+  { nombre: 'Contadores S', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
+  { nombre: 'Contadores E', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
+  { nombre: 'Abogados A', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
+  { nombre: 'Abogados E', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
+  { nombre: 'Kinesiólogos', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
+  { nombre: 'Ingenieros Arq.', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
+  { nombre: 'Ingenieros O', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
+  { nombre: 'Ingenieros Z', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
+  { nombre: 'Ingenieros Bio.', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
+  { nombre: 'Contadores J', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
+  { nombre: 'Contadores V', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
 ];
 
 const App = () => {
-  const [teams, setTeams] = useState(initialTeams);
-  const [matches, setMatches] = useState([]);
-  const [headToHead, setHeadToHead] = useState({});
+  const [equipos, setEquipos] = useState(equiposIniciales);
+  const [partidosPorFecha, setPartidosPorFecha] = useState(Array(13).fill([]));
 
-  const handleMatchResult = (matchResults) => {
-    const updatedTeams = teams.map(team => {
-      const result = matchResults.find(m => m.team1 === team.name || m.team2 === team.name);
-      if (result) {
-        const isTeam1 = result.team1 === team.name;
-        const goalsFor = isTeam1 ? result.goals1 : result.goals2;
-        const goalsAgainst = isTeam1 ? result.goals2 : result.goals1;
-        const won = goalsFor > goalsAgainst ? 1 : 0;
-        const drawn = goalsFor === goalsAgainst ? 1 : 0;
-        const lost = goalsFor < goalsAgainst ? 1 : 0;
+  const actualizarResultados = (resultados, indiceFecha) => {
+    const nuevosEquipos = [...equipos];
+    const nuevosPartidosPorFecha = [...partidosPorFecha];
+    const partidosAnteriores = partidosPorFecha[indiceFecha];
 
-        return {
-          ...team,
-          played: team.played + 1,
-          won: team.won + won,
-          drawn: team.drawn + drawn,
-          lost: team.lost + lost,
-          goalsFor: team.goalsFor + goalsFor,
-          goalsAgainst: team.goalsAgainst + goalsAgainst,
-          goalDifference: team.goalDifference + (goalsFor - goalsAgainst),
-          points: team.points + (won * 3 + drawn * 1),
-        };
-      }
-      return team;
+    // Revertir los resultados anteriores
+    partidosAnteriores.forEach(({ equipo1, equipo2, goles1, goles2 }) => {
+      actualizarEstadisticas(nuevosEquipos, equipo1, equipo2, -goles1, -goles2);
     });
 
-    const updatedHeadToHead = { ...headToHead };
-    matchResults.forEach(({ team1, team2, goals1, goals2 }) => {
-      if (!updatedHeadToHead[team1]) updatedHeadToHead[team1] = {};
-      if (!updatedHeadToHead[team2]) updatedHeadToHead[team2] = {};
-
-      if (goals1 > goals2) {
-        updatedHeadToHead[team1][team2] = (updatedHeadToHead[team1][team2] || 0) + 1;
-        updatedHeadToHead[team2][team1] = (updatedHeadToHead[team2][team1] || 0) - 1;
-      } else if (goals2 > goals1) {
-        updatedHeadToHead[team2][team1] = (updatedHeadToHead[team2][team1] || 0) + 1;
-        updatedHeadToHead[team1][team2] = (updatedHeadToHead[team1][team2] || 0) - 1;
-      }
+    // Aplicar los nuevos resultados
+    resultados.forEach(({ equipo1, equipo2, goles1, goles2 }) => {
+      actualizarEstadisticas(nuevosEquipos, equipo1, equipo2, goles1, goles2);
     });
 
-    setTeams(updatedTeams);
-    setHeadToHead(updatedHeadToHead);
-    setMatches([...matches, ...matchResults]);
+    nuevosPartidosPorFecha[indiceFecha] = resultados;
+    setEquipos(nuevosEquipos);
+    setPartidosPorFecha(nuevosPartidosPorFecha);
   };
 
-  const sortTeams = (a, b) => {
-    if (a.points !== b.points) return b.points - a.points;
-    if (headToHead[a.name] && headToHead[a.name][b.name] !== undefined) return headToHead[a.name][b.name];
-    if (a.goalDifference !== b.goalDifference) return b.goalDifference - a.goalDifference;
-    return b.goalsFor - a.goalsFor;
-  };
+  const actualizarEstadisticas = (equipos, equipo1, equipo2, goles1, goles2) => {
+    const eq1 = equipos.find(e => e.nombre === equipo1);
+    const eq2 = equipos.find(e => e.nombre === equipo2);
 
-  const sortedTeams = [...teams].sort(sortTeams);
+    if (eq1 && eq2) {
+      eq1.golesAFavor += goles1;
+      eq1.golesEnContra += goles2;
+      eq2.golesAFavor += goles2;
+      eq2.golesEnContra += goles1;
+      eq1.diferenciaGoles += (goles1 - goles2);
+      eq2.diferenciaGoles += (goles2 - goles1);
+
+      if (goles1 > goles2) {
+        eq1.ganados++;
+        eq1.puntos += 3;
+        eq2.perdidos++;
+      } else if (goles1 < goles2) {
+        eq2.ganados++;
+        eq2.puntos += 3;
+        eq1.perdidos++;
+      } else {
+        eq1.empatados++;
+        eq1.puntos++;
+        eq2.empatados++;
+        eq2.puntos++;
+      }
+
+      eq1.jugados++;
+      eq2.jugados++;
+    }
+  };
 
   return (
-    <div>
-      <h1>Football Standings</h1>
-      <MatchResults teams={teams} onMatchResult={handleMatchResult} />
-      <StandingsTable teams={sortedTeams} />
+    <div className="container mx-auto">
+      <h1 className="text-3xl font-bold my-4 text-center">Tabla de Posiciones</h1>
+      <div className="flex justify-center">
+        <TablaPosiciones equipos={equipos} />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 my-4">
+        {Array.from({ length: 13 }, (_, i) => (
+          <Fecha key={i} indiceFecha={i} equipos={equipos} onActualizarResultados={actualizarResultados} />
+        ))}
+      </div>
+      <Emparejamientos equipos={equipos} />
     </div>
   );
 };
 
 export default App;
+
