@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import MatchInput from './componentes/MatchInput';
+import MatchResults from './componentes/MatchResults';
 import StandingsTable from './componentes/StandingsTable';
 
 
@@ -22,14 +22,16 @@ const initialTeams = [
 
 const App = () => {
   const [teams, setTeams] = useState(initialTeams);
+  const [matches, setMatches] = useState([]);
   const [headToHead, setHeadToHead] = useState({});
 
-  const handleMatchResult = (team1, team2, goals1, goals2) => {
+  const handleMatchResult = (matchResults) => {
     const updatedTeams = teams.map(team => {
-      if (team.name === team1 || team.name === team2) {
-        const isTeam1 = team.name === team1;
-        const goalsFor = isTeam1 ? goals1 : goals2;
-        const goalsAgainst = isTeam1 ? goals2 : goals1;
+      const result = matchResults.find(m => m.team1 === team.name || m.team2 === team.name);
+      if (result) {
+        const isTeam1 = result.team1 === team.name;
+        const goalsFor = isTeam1 ? result.goals1 : result.goals2;
+        const goalsAgainst = isTeam1 ? result.goals2 : result.goals1;
         const won = goalsFor > goalsAgainst ? 1 : 0;
         const drawn = goalsFor === goalsAgainst ? 1 : 0;
         const lost = goalsFor < goalsAgainst ? 1 : 0;
@@ -42,7 +44,7 @@ const App = () => {
           lost: team.lost + lost,
           goalsFor: team.goalsFor + goalsFor,
           goalsAgainst: team.goalsAgainst + goalsAgainst,
-          goalDifference: team.goalsFor + goalsFor - (team.goalsAgainst + goalsAgainst),
+          goalDifference: team.goalDifference + (goalsFor - goalsAgainst),
           points: team.points + (won * 3 + drawn * 1),
         };
       }
@@ -50,19 +52,22 @@ const App = () => {
     });
 
     const updatedHeadToHead = { ...headToHead };
-    if (!updatedHeadToHead[team1]) updatedHeadToHead[team1] = {};
-    if (!updatedHeadToHead[team2]) updatedHeadToHead[team2] = {};
+    matchResults.forEach(({ team1, team2, goals1, goals2 }) => {
+      if (!updatedHeadToHead[team1]) updatedHeadToHead[team1] = {};
+      if (!updatedHeadToHead[team2]) updatedHeadToHead[team2] = {};
 
-    if (goals1 > goals2) {
-      updatedHeadToHead[team1][team2] = (updatedHeadToHead[team1][team2] || 0) + 1;
-      updatedHeadToHead[team2][team1] = (updatedHeadToHead[team2][team1] || 0) - 1;
-    } else if (goals2 > goals1) {
-      updatedHeadToHead[team2][team1] = (updatedHeadToHead[team2][team1] || 0) + 1;
-      updatedHeadToHead[team1][team2] = (updatedHeadToHead[team1][team2] || 0) - 1;
-    }
+      if (goals1 > goals2) {
+        updatedHeadToHead[team1][team2] = (updatedHeadToHead[team1][team2] || 0) + 1;
+        updatedHeadToHead[team2][team1] = (updatedHeadToHead[team2][team1] || 0) - 1;
+      } else if (goals2 > goals1) {
+        updatedHeadToHead[team2][team1] = (updatedHeadToHead[team2][team1] || 0) + 1;
+        updatedHeadToHead[team1][team2] = (updatedHeadToHead[team1][team2] || 0) - 1;
+      }
+    });
 
     setTeams(updatedTeams);
     setHeadToHead(updatedHeadToHead);
+    setMatches([...matches, ...matchResults]);
   };
 
   const sortTeams = (a, b) => {
@@ -77,7 +82,7 @@ const App = () => {
   return (
     <div>
       <h1>Football Standings</h1>
-      <MatchInput teams={teams} onMatchResult={handleMatchResult} />
+      <MatchResults teams={teams} onMatchResult={handleMatchResult} />
       <StandingsTable teams={sortedTeams} />
     </div>
   );

@@ -36,3 +36,4 @@ const StandingsTable = ({ teams }) => {
 };
 
 export default StandingsTable;
+
