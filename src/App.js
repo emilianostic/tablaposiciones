@@ -1,96 +1,70 @@
 import React, { useState } from 'react';
-import TablaPosiciones from './componentes/TablaPosiciones';
 import Fecha from './componentes/Fecha';
-import Emparejamientos from './componentes/Emparejamientos';
-import 'tailwindcss/tailwind.css';
+import TablaPosiciones from './componentes/TablaPosiciones';
 
 const equiposIniciales = [
-  { nombre: 'Ingenieros A', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
-  { nombre: 'Contadores D', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
-  { nombre: 'Contadores S', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
-  { nombre: 'Contadores E', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
-  { nombre: 'Abogados A', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
-  { nombre: 'Abogados E', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
-  { nombre: 'Kinesiólogos', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
-  { nombre: 'Ingenieros Arq.', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
-  { nombre: 'Ingenieros O', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
-  { nombre: 'Ingenieros Z', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
-  { nombre: 'Ingenieros Bio.', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
-  { nombre: 'Contadores J', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
-  { nombre: 'Contadores V', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0 },
+  { nombre: 'Ingenieros A', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0  },
+  { nombre: 'Contadores E', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0  },
+  { nombre: 'Abogados A', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0  },
+  { nombre: 'Contadores S', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0  },
+  { nombre: 'Abogadoes E', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0  },
+  { nombre: 'Ingenieros Arq', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0  },
+  { nombre: 'Economistas', jugados: 0, ganados: 0, empatados: 0, perdidos: 0, golesAFavor: 0, golesEnContra: 0, puntos: 0, diferenciaGoles: 0  }
 ];
 
 const App = () => {
   const [equipos, setEquipos] = useState(equiposIniciales);
-  const [partidosPorFecha, setPartidosPorFecha] = useState(Array(13).fill([]));
 
-  const actualizarResultados = (resultados, indiceFecha) => {
-    const nuevosEquipos = [...equipos];
-    const nuevosPartidosPorFecha = [...partidosPorFecha];
-    const partidosAnteriores = partidosPorFecha[indiceFecha];
+  const manejarResultadoPartido = (partidos, equipoDescansa) => {
+    const equiposActualizados = equipos.map(equipo => {
+      const partido = partidos.find(p => p.equipo1 === equipo.nombre || p.equipo2 === equipo.nombre);
+      
+      if (partido) {
+        const golesAFavor = partido.equipo1 === equipo.nombre ? partido.goles1 : partido.goles2;
+        const golesEnContra = partido.equipo1 === equipo.nombre ? partido.goles2 : partido.goles1;
+        const ganados = golesAFavor > golesEnContra ? 1 : 0;
+        const empatados = golesAFavor === golesEnContra ? 1 : 0;
+        const perdidos = golesAFavor < golesEnContra ? 1 : 0;
 
-    // Revertir los resultados anteriores
-    partidosAnteriores.forEach(({ equipo1, equipo2, goles1, goles2 }) => {
-      actualizarEstadisticas(nuevosEquipos, equipo1, equipo2, -goles1, -goles2);
-    });
-
-    // Aplicar los nuevos resultados
-    resultados.forEach(({ equipo1, equipo2, goles1, goles2 }) => {
-      actualizarEstadisticas(nuevosEquipos, equipo1, equipo2, goles1, goles2);
-    });
-
-    nuevosPartidosPorFecha[indiceFecha] = resultados;
-    setEquipos(nuevosEquipos);
-    setPartidosPorFecha(nuevosPartidosPorFecha);
-  };
-
-  const actualizarEstadisticas = (equipos, equipo1, equipo2, goles1, goles2) => {
-    const eq1 = equipos.find(e => e.nombre === equipo1);
-    const eq2 = equipos.find(e => e.nombre === equipo2);
-
-    if (eq1 && eq2) {
-      eq1.golesAFavor += goles1;
-      eq1.golesEnContra += goles2;
-      eq2.golesAFavor += goles2;
-      eq2.golesEnContra += goles1;
-      eq1.diferenciaGoles += (goles1 - goles2);
-      eq2.diferenciaGoles += (goles2 - goles1);
-
-      if (goles1 > goles2) {
-        eq1.ganados++;
-        eq1.puntos += 3;
-        eq2.perdidos++;
-      } else if (goles1 < goles2) {
-        eq2.ganados++;
-        eq2.puntos += 3;
-        eq1.perdidos++;
-      } else {
-        eq1.empatados++;
-        eq1.puntos++;
-        eq2.empatados++;
-        eq2.puntos++;
+        return {
+          ...equipo,
+          jugados: equipo.jugados + 1,
+          ganados: equipo.ganados + ganados,
+          empatados: equipo.empatados + empatados,
+          perdidos: equipo.perdidos + perdidos,
+          golesAFavor: equipo.golesAFavor + golesAFavor,
+          golesEnContra: equipo.golesEnContra + golesEnContra,
+          puntos: equipo.puntos + (ganados * 3) + (empatados * 1),
+          diferenciaGoles: equipo.diferenciaGoles + (golesAFavor - golesEnContra),
+        };
+      } else if (equipo.nombre === equipoDescansa) {
+        return {
+          ...equipo,
+          jugados: equipo.jugados + 1,
+          ganados: equipo.ganados,
+          empatados: equipo.empatados,
+          perdidos: equipo.perdidos,
+          golesAFavor: equipo.golesAFavor,
+          golesEnContra: equipo.golesEnContra,
+          puntos: equipo.puntos,
+          diferenciaGoles: equipo.diferenciaGoles,
+        };
       }
+      return equipo;
+    });
 
-      eq1.jugados++;
-      eq2.jugados++;
-    }
+    setEquipos(equiposActualizados);
   };
 
   return (
-    <div className="container mx-auto">
-      <h1 className="text-3xl font-bold my-4 text-center">Tabla de Posiciones</h1>
-      <div className="flex justify-center">
-        <TablaPosiciones equipos={equipos} />
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 my-4">
-        {Array.from({ length: 13 }, (_, i) => (
-          <Fecha key={i} indiceFecha={i} equipos={equipos} onActualizarResultados={actualizarResultados} />
-        ))}
-      </div>
-      <Emparejamientos equipos={equipos} />
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4 text-center">Tabla de Posiciones</h1>
+      <TablaPosiciones equipos={equipos} />
+      <Fecha equipos={equipos} onActualizarResultados={manejarResultadoPartido} />
     </div>
   );
 };
 
 export default App;
+
 

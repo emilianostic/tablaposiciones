@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import Emparejamientos from './Emparejamientos';
 
-const Fecha = ({ indiceFecha, equipos, onActualizarResultados }) => {
+const Fecha = ({ equipos, onActualizarResultados }) => {
   const [partidos, setPartidos] = useState(
     Array(6).fill({ equipo1: '', goles1: '', equipo2: '', goles2: '' })
   );
   const [equipoDescansa, setEquipoDescansa] = useState('');
+  const [error, setError] = useState('');
 
   const manejarCambioPartido = (indice, campo, valor) => {
     const nuevosPartidos = [...partidos];
@@ -14,71 +16,53 @@ const Fecha = ({ indiceFecha, equipos, onActualizarResultados }) => {
 
   const manejarEnvioResultados = (e) => {
     e.preventDefault();
-    onActualizarResultados(partidos, indiceFecha);
+    const equiposEnPartidos = partidos.flatMap(p => [p.equipo1, p.equipo2]);
+    const equiposRepetidos = equiposEnPartidos.filter((equipo, index, self) => equipo && self.indexOf(equipo) !== index);
+
+    if (equiposRepetidos.length > 0 || equiposEnPartidos.includes(equipoDescansa)) {
+      setError('Hay equipos repetidos en más de un emparejamiento o el equipo que descansa está en un emparejamiento.');
+      return;
+    }
+
+    const resultadosPartido = partidos.map((partido, indice) => ({
+      ...partido,
+      goles1: parseInt(partido.goles1, 10),
+      goles2: parseInt(partido.goles2, 10),
+    }));
+
+    onActualizarResultados(resultadosPartido, equipoDescansa);
+    setPartidos(Array(6).fill({ equipo1: '', goles1: '', equipo2: '', goles2: '' }));
+    setEquipoDescansa('');
+    setError('');
   };
 
   return (
-    <div className="bg-white p-4 rounded shadow-md">
-      <h2 className="text-xl font-bold mb-4">Fecha {indiceFecha + 1}</h2>
-      <form onSubmit={manejarEnvioResultados}>
-        {partidos.map((partido, indice) => (
-          <div key={indice} className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-2">
-            <select
-              value={partido.equipo1}
-              onChange={(e) => manejarCambioPartido(indice, 'equipo1', e.target.value)}
-              className="p-2 border rounded"
-            >
-              <option value="">Equipo 1</option>
-              {equipos.filter(e => e.nombre !== equipoDescansa).map((equipo, i) => (
-                <option key={i} value={equipo.nombre}>{equipo.nombre}</option>
-              ))}
-            </select>
-            <input
-              type="number"
-              value={partido.goles1}
-              onChange={(e) => manejarCambioPartido(indice, 'goles1', e.target.value)}
-              placeholder="Goles Equipo 1"
-              className="p-2 border rounded"
-            />
-            <select
-              value={partido.equipo2}
-              onChange={(e) => manejarCambioPartido(indice, 'equipo2', e.target.value)}
-              className="p-2 border rounded"
-            >
-              <option value="">Equipo 2</option>
-              {equipos.filter(e => e.nombre !== equipoDescansa).map((equipo, i) => (
-                <option key={i} value={equipo.nombre}>{equipo.nombre}</option>
-              ))}
-            </select>
-            <input
-              type="number"
-              value={partido.goles2}
-              onChange={(e) => manejarCambioPartido(indice, 'goles2', e.target.value)}
-              placeholder="Goles Equipo 2"
-              className="p-2 border rounded"
-            />
-          </div>
+    <form onSubmit={manejarEnvioResultados} className="w-full max-w-lg mx-auto mt-8">
+      <h2 className="text-xl font-semibold mb-4">Ingresar Resultados de la Fecha</h2>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      <Emparejamientos
+        partidos={partidos}
+        equipos={equipos}
+        manejarCambioPartido={manejarCambioPartido}
+      />
+      <select
+        value={equipoDescansa}
+        onChange={(e) => setEquipoDescansa(e.target.value)}
+        className="mb-4 p-2 border rounded w-full"
+      >
+        <option value="">Selecciona el equipo que descansa</option>
+        {equipos.map((equipo, index) => (
+          <option key={index} value={equipo.nombre}>{equipo.nombre}</option>
         ))}
-        <div className="mb-4">
-          <label>Equipo que descansa:</label>
-          <select
-            value={equipoDescansa}
-            onChange={(e) => setEquipoDescansa(e.target.value)}
-            className="ml-2 p-2 border rounded"
-          >
-            <option value="">Seleccionar Equipo</option>
-            {equipos.map((equipo, i) => (
-              <option key={i} value={equipo.nombre}>{equipo.nombre}</option>
-            ))}
-          </select>
-        </div>
-        <button type="submit" className="bg-blue-500 text-white p-2 rounded">Enviar Resultados</button>
-      </form>
-    </div>
+      </select>
+      <button type="submit" className="p-2 bg-blue-500 text-white rounded w-full">Enviar Resultados</button>
+    </form>
   );
 };
 
 export default Fecha;
+
+
 
 
 

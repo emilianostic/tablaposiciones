@@ -1,85 +1,90 @@
 import React, { useState } from 'react';
 
-const Emparejamientos = ({ equipos }) => {
-  const [resultadosCuartos, setResultadosCuartos] = useState({});
-  const [resultadosSemis, setResultadosSemis] = useState({});
-  const [resultadoFinal, setResultadoFinal] = useState({});
+const Emparejamientos = ({ equipos, onActualizarResultados }) => {
+  const [partidos, setPartidos] = useState(
+    Array(6).fill({ equipo1: '', goles1: '', equipo2: '', goles2: '' })
+  );
+  const [equipoDescansa, setEquipoDescansa] = useState('');
+  const [error, setError] = useState('');
 
-  const manejarCambioResultado = (fase, equipo1, equipo2, goles1, goles2, penales1 = null, penales2 = null) => {
-    const resultados = fase === 'cuartos' ? { ...resultadosCuartos } : fase === 'semis' ? { ...resultadosSemis } : { ...resultadoFinal };
-    resultados[equipo1 + 'vs' + equipo2] = { goles1, goles2, penales1, penales2 };
-    if (fase === 'cuartos') setResultadosCuartos(resultados);
-    else if (fase === 'semis') setResultadosSemis(resultados);
-    else setResultadoFinal(resultados);
+  const manejarCambioPartido = (indice, campo, valor) => {
+    const nuevosPartidos = [...partidos];
+    nuevosPartidos[indice] = { ...nuevosPartidos[indice], [campo]: valor };
+    setPartidos(nuevosPartidos);
   };
 
-  const renderPartido = (fase, equipo1, equipo2) => {
-    const resultado = fase === 'cuartos' ? resultadosCuartos[equipo1 + 'vs' + equipo2] : fase === 'semis' ? resultadosSemis[equipo1 + 'vs' + equipo2] : resultadoFinal[equipo1 + 'vs' + equipo2];
-    const { goles1 = '', goles2 = '', penales1 = '', penales2 = '' } = resultado || {};
+  const manejarEnvioResultados = (e) => {
+    e.preventDefault();
+    const equiposEnPartidos = partidos.flatMap(p => [p.equipo1, p.equipo2]);
+    const equiposRepetidos = equiposEnPartidos.filter((equipo, index, self) => equipo && self.indexOf(equipo) !== index);
 
-    return (
-      <div>
-        <h4>{equipo1} vs {equipo2}</h4>
-        <input
-          type="number"
-          value={goles1}
-          onChange={(e) => manejarCambioResultado(fase, equipo1, equipo2, e.target.value, goles2)}
-          placeholder="Goles Equipo 1"
-        />
-        <input
-          type="number"
-          value={goles2}
-          onChange={(e) => manejarCambioResultado(fase, equipo1, equipo2, goles1, e.target.value)}
-          placeholder="Goles Equipo 2"
-        />
-        {goles1 === goles2 && goles1 !== '' && goles2 !== '' && (
-          <div>
-            <h5>Penales</h5>
-            <input
-              type="number"
-              value={penales1}
-              onChange={(e) => manejarCambioResultado(fase, equipo1, equipo2, goles1, goles2, e.target.value, penales2)}
-              placeholder="Penales Equipo 1"
-            />
-            <input
-              type="number"
-              value={penales2}
-              onChange={(e) => manejarCambioResultado(fase, equipo1, equipo2, goles1, goles2, penales1, e.target.value)}
-              placeholder="Penales Equipo 2"
-            />
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const equiposOrdenados = [...equipos].sort((a, b) => {
-    if (b.puntos === a.puntos) {
-      if (b.diferenciaGoles === a.diferenciaGoles) {
-        return b.golesAFavor - a.golesAFavor;
-      }
-      return b.diferenciaGoles - a.diferenciaGoles;
+    if (equiposRepetidos.length > 0 || equiposEnPartidos.includes(equipoDescansa)) {
+      setError('Hay equipos repetidos en más de un emparejamiento o el equipo que descansa está en un emparejamiento.');
+      return;
     }
-    return b.puntos - a.puntos;
-  });
+
+    const resultadosPartido = partidos.map((partido, indice) => ({
+      ...partido,
+      goles1: parseInt(partido.goles1, 10),
+      goles2: parseInt(partido.goles2, 10),
+    }));
+
+    onActualizarResultados(resultadosPartido, equipoDescansa);
+    setPartidos(Array(6).fill({ equipo1: '', goles1: '', equipo2: '', goles2: '' }));
+    setEquipoDescansa('');
+    setError('');
+  };
 
   return (
-    <div>
-      <h2>Cuartos de Final</h2>
-      {renderPartido('cuartos', equiposOrdenados[0].nombre, equiposOrdenados[7].nombre)}
-      {renderPartido('cuartos', equiposOrdenados[1].nombre, equiposOrdenados[6].nombre)}
-      {renderPartido('cuartos', equiposOrdenados[2].nombre, equiposOrdenados[5].nombre)}
-      {renderPartido('cuartos', equiposOrdenados[3].nombre, equiposOrdenados[4].nombre)}
-
-      <h2>Semifinales</h2>
-      {renderPartido('semis', resultadosCuartos[equiposOrdenados[0].nombre + 'vs' + equiposOrdenados[7].nombre] ? equiposOrdenados[0].nombre : equiposOrdenados[7].nombre, resultadosCuartos[equiposOrdenados[3].nombre + 'vs' + equiposOrdenados[4].nombre] ? equiposOrdenados[3].nombre : equiposOrdenados[4].nombre)}
-      {renderPartido('semis', resultadosCuartos[equiposOrdenados[1].nombre + 'vs' + equiposOrdenados[6].nombre] ? equiposOrdenados[1].nombre : equiposOrdenados[6].nombre, resultadosCuartos[equiposOrdenados[2].nombre + 'vs' + equiposOrdenados[5].nombre] ? equiposOrdenados[2].nombre : equiposOrdenados[5].nombre)}
-
-      <h2>Final</h2>
-      {renderPartido('final', resultadosSemis[equiposOrdenados[0].nombre + 'vs' + equiposOrdenados[7].nombre] ? equiposOrdenados[0].nombre : equiposOrdenados[7].nombre, resultadosSemis[equiposOrdenados[3].nombre + 'vs' + equiposOrdenados[4].nombre] ? equiposOrdenados[3].nombre : equiposOrdenados[4].nombre)}
-
-      <h1>CAMPEÓN: {resultadoFinal[resultadosSemis[equiposOrdenados[0].nombre + 'vs' + equiposOrdenados[7].nombre] ? equiposOrdenados[0].nombre : equiposOrdenados[7].nombre + 'vs' + resultadosSemis[equiposOrdenados[3].nombre + 'vs' + equiposOrdenados[4].nombre] ? equiposOrdenados[3].nombre : equiposOrdenados[4].nombre]}</h1>
-    </div>
+    <form onSubmit={manejarEnvioResultados}>
+      <h2>Ingresar Resultados</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {partidos.map((partido, indice) => (
+        <div key={indice}>
+          <select
+            value={partido.equipo1}
+            onChange={(e) => manejarCambioPartido(indice, 'equipo1', e.target.value)}
+          >
+            <option value="">Selecciona el equipo 1</option>
+            {equipos.map((equipo, index) => (
+              <option key={index} value={equipo.nombre}>{equipo.nombre}</option>
+            ))}
+          </select>
+          <input
+            type="number"
+            value={partido.goles1}
+            onChange={(e) => manejarCambioPartido(indice, 'goles1', e.target.value)}
+            placeholder="Goles 1"
+          />
+          vs
+          <select
+            value={partido.equipo2}
+            onChange={(e) => manejarCambioPartido(indice, 'equipo2', e.target.value)}
+          >
+            <option value="">Selecciona el equipo 2</option>
+            {equipos.map((equipo, index) => (
+              <option key={index} value={equipo.nombre}>{equipo.nombre}</option>
+            ))}
+          </select>
+          <input
+            type="number"
+            value={partido.goles2}
+            onChange={(e) => manejarCambioPartido(indice, 'goles2', e.target.value)}
+            placeholder="Goles 2"
+          />
+        </div>
+      ))}
+      <select
+        value={equipoDescansa}
+        onChange={(e) => setEquipoDescansa(e.target.value)}
+      >
+        <option value="">Selecciona el equipo que descansa</option>
+        {equipos.map((equipo, index) => (
+          <option key={index} value={equipo.nombre}>{equipo.nombre}</option>
+        ))}
+      </select>
+      <button type="submit">Enviar Resultados</button>
+    </form>
   );
 };
 
